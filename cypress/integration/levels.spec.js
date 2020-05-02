@@ -83,6 +83,10 @@ function getSearchableSummarySnippet(episode) {
   return longestSnippet.substr(0, 50);
 }
 
+function getSelector() {
+  return cy.get("select");
+}
+
 beforeEach(() => cy.visit(""));
 
 describe("Level 100", () => {
@@ -141,6 +145,28 @@ describe("Level 200", () => {
         search(episode.name).then(() => {
           cy.contains(/\D1\s+episode/);
         });
+      });
+    });
+  });
+});
+
+describe("Level 300", () => {
+  describe("Episode selector", () => {
+    it("includes selector", () => {
+      getSelector();
+    });
+
+    it("the selector lists all the episodes", () => {
+      getAllEpisodes().then((episodes) => {
+        getSelector()
+          .get("option")
+          .then((options) => {
+            episodes.forEach((episode) => {
+              cy.wrap(options).contains(
+                `${getEpisodeCode(episode)} - ${episode.name}`
+              );
+            });
+          });
       });
     });
   });

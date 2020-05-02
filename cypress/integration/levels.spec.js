@@ -88,11 +88,9 @@ beforeEach(() => cy.visit(""));
 describe("Level 100", () => {
   it("shows all the episodes (level 100)", () => {
     getAllEpisodes().then((episodes) => {
-      episodes
-        .slice(0, 5) // A sample should do
-        .forEach((episode) =>
-          cy.wrap(get$Episode(episode)).should("be.visible")
-        );
+      episodes.forEach((episode) =>
+        cy.wrap(get$Episode(episode)).should("be.visible")
+      );
     });
   });
 

@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 const siteUrl = "https://cyf-banirezaie-tv.netlify.app/";
 
 /**

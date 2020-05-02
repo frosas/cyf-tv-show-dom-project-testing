@@ -24,10 +24,10 @@ function toFragment(html) {
 function get$Episode(episode) {
   /**
    * @param {JQuery<HTMLElement>} $candidate
-   * @returns {JQuery<HTMLElement>?}
+   * @returns {JQuery<HTMLElement>}
    */
   function find$Episode($candidate) {
-    if (!$candidate.length) return null;
+    if (!$candidate.length) return $candidate;
     const text = $candidate.text();
     const includesEverything =
       text.includes(episode.name) &&
@@ -90,7 +90,7 @@ function getSelector() {
 beforeEach(() => cy.visit(""));
 
 describe("Level 100", () => {
-  it("shows all the episodes (level 100)", () => {
+  it("shows all the episodes (levels 100-300)", () => {
     getAllEpisodes().then((episodes) => {
       episodes.forEach((episode) =>
         cy.wrap(get$Episode(episode)).should("be.visible")
@@ -105,7 +105,7 @@ describe("Level 100", () => {
 
 describe("Level 200", () => {
   describe("Search", () => {
-    it("includes input (level 200+)", () => {
+    it("includes input (levels 200+)", () => {
       getSearchInput();
     });
 
@@ -139,7 +139,7 @@ describe("Level 200", () => {
       });
     });
 
-    it("shows how many episodes match (200+)", () => {
+    it("shows how many episodes match (levels 200+)", () => {
       cy.contains(/\d+\s+episode/);
       getAllEpisodes().then(([episode]) => {
         search(episode.name).then(() => {
@@ -151,12 +151,12 @@ describe("Level 200", () => {
 });
 
 describe("Level 300", () => {
-  describe("Episode selector", () => {
+  describe("Episode selector (levels 300+)", () => {
     it("includes selector", () => {
       getSelector();
     });
 
-    it("the selector lists all the episodes", () => {
+    it("the selector lists all the episodes (levels 300+)", () => {
       getAllEpisodes().then((episodes) => {
         getSelector()
           .get("option")
@@ -168,6 +168,73 @@ describe("Level 300", () => {
             });
           });
       });
+    });
+
+    it.skip("makes the selected episode visible", () => {
+      // TODO https://stackoverflow.com/questions/58713418/verify-element-is-within-viewport-with-cypress
+    });
+  });
+});
+
+/** @type {Map<string, Array<Episode>>} */
+let episodesByShow;
+
+function getCurrentShowId() {
+  for (const [id, [episode]] of episodesByShow) {
+    if (get$Episode(episode)) return id;
+  }
+}
+
+function getCurrentShowEpisodes() {
+  const id = getCurrentShowId();
+  if (id) {
+    const episodes = episodesByShow.get(id);
+    if (episodes) return episodes;
+    throw new Error("🐞");
+  }
+}
+
+/**
+ * @template T
+ * @param {() => T | undefined} callback
+ * @param {object} options
+ * @param {number} [options.timeout]
+ * @returns {Cypress.Chainable<T>}
+ */
+function retryUntil(callback, { timeout = 3000 } = {}) {
+  const result = callback();
+  if (result === undefined) {
+    const WAIT_DURATION = 500; // ms
+    timeout = Math.max(0, timeout - WAIT_DURATION);
+    if (!timeout) throw new Error(`Timed out while retrying ${callback.name}`);
+    return cy.wait(WAIT_DURATION).then(() => retryUntil(callback, { timeout }));
+  }
+  return cy.wrap(result);
+}
+
+before(() => {
+  cy.server();
+  cy.route({
+    url: "https://api.tvmaze.com/shows/*/episodes",
+    onResponse: (/** @type {XMLHttpRequest & {url: string}} */ xhr) => {
+      console.log(`🍅 storing show episodes`, xhr.url);
+      episodesByShow.set(xhr.url, xhr.response.body);
+    },
+  });
+});
+
+beforeEach(() => {
+  episodesByShow = new Map();
+});
+
+describe("Level 350", () => {
+  it("shows all the episodes (levels 350+)", () => {
+    retryUntil(getCurrentShowEpisodes).then((episodes) => {
+      episodes
+        .slice(0, 10)
+        .forEach((episode) =>
+          cy.wrap(get$Episode(episode)).should("be.visible")
+        );
     });
   });
 });

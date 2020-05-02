@@ -10,6 +10,7 @@ type Episode = {
 
 interface Window {
   getAllEpisodes: () => Array<Episode>;
+  eval: (string: string) => any;
 }
 
 type CypressGetElements = Cypress.Chainable<JQuery<HTMLElement>>;

@@ -107,22 +107,25 @@ describe("Level 200", () => {
 
     it("shows the episodes with a matching name (level 200+)", () => {
       getAllEpisodes().then(([episode]) => {
-        search(episode.name);
-        cy.wrap(get$Episode(episode)).should("be.visible");
+        search(episode.name).then(() => {
+          cy.wrap(get$Episode(episode)).should("be.visible");
+        });
       });
     });
 
     it("shows the episodes with a matching summary (level 200+)", () => {
       getAllEpisodes().then(([episode]) => {
-        search(getSearchableSummarySnippet(episode));
-        cy.wrap(get$Episode(episode)).should("be.visible");
+        search(getSearchableSummarySnippet(episode)).then(() => {
+          cy.wrap(get$Episode(episode)).should("be.visible");
+        });
       });
     });
 
     it("doesn't show non-matching episodes (level 200+)", () => {
       getAllEpisodes().then(([episode]) => {
-        search(`🐙🐙🐙`);
-        cy.wrap(get$Episode(episode)).should("not.be.visible");
+        search(`🐙🐙🐙`).then(() => {
+          cy.wrap(get$Episode(episode)).should("not.be.visible");
+        });
       });
     });
   });

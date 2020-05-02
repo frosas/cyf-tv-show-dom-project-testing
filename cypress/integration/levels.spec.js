@@ -1,5 +1,3 @@
-const siteUrl = "https://cyf-banirezaie-tv.netlify.app/";
-
 /**
  * @param {Episode} episode
  */
@@ -85,9 +83,7 @@ function getSearchableSummarySnippet(episode) {
   return longestSnippet.substr(0, 50);
 }
 
-beforeEach(() => {
-  cy.visit(siteUrl);
-});
+beforeEach(() => cy.visit(""));
 
 describe("Level 100", () => {
   it("shows all the episodes (level 100)", () => {

@@ -49,7 +49,7 @@ function getSearchInput() {
  */
 function search(text) {
   // TODO `force` is needed for https://cyf-banirezaie-tv.netlify.app/
-  return getSearchInput().type(text, { force: true });
+  return getSearchInput().clear().type(text, { force: true });
 }
 
 function getAllEpisodes() {
@@ -107,16 +107,22 @@ describe("Level 200", () => {
 
     it("shows the episodes with a matching name (level 200+)", () => {
       getAllEpisodes().then(([episode]) => {
-        search(episode.name).then(() => {
-          cy.wrap(get$Episode(episode)).should("be.visible");
+        const text = episode.name;
+        [text, text.toUpperCase()].forEach((text) => {
+          search(text).then(() => {
+            cy.wrap(get$Episode(episode)).should("be.visible");
+          });
         });
       });
     });
 
     it("shows the episodes with a matching summary (level 200+)", () => {
       getAllEpisodes().then(([episode]) => {
-        search(getSearchableSummarySnippet(episode)).then(() => {
-          cy.wrap(get$Episode(episode)).should("be.visible");
+        const text = getSearchableSummarySnippet(episode);
+        [text, text.toUpperCase()].forEach((text) => {
+          search(text).then(() => {
+            cy.wrap(get$Episode(episode)).should("be.visible");
+          });
         });
       });
     });

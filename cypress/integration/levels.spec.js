@@ -134,5 +134,14 @@ describe("Level 200", () => {
         });
       });
     });
+
+    it("shows how many episodes match (200+)", () => {
+      cy.contains(/\d+\s+episode/);
+      getAllEpisodes().then(([episode]) => {
+        search(episode.name).then(() => {
+          cy.contains(/\D1\s+episode/);
+        });
+      });
+    });
   });
 });

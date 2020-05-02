@@ -152,11 +152,7 @@ describe("Level 200", () => {
 
 describe("Level 300", () => {
   describe("Episode selector (levels 300+)", () => {
-    it("includes selector", () => {
-      getSelector();
-    });
-
-    it("the selector lists all the episodes (levels 300+)", () => {
+    it("includes selector with all the episodes (levels 300+)", () => {
       getAllEpisodes().then((episodes) => {
         getSelector()
           .get("option")
@@ -201,18 +197,19 @@ function getCurrentShowEpisodes() {
  * @param {number} [options.timeout]
  * @returns {Cypress.Chainable<T>}
  */
-function retryUntil(callback, { timeout = 3000 } = {}) {
+function retryUntil(callback, { timeout = 5000 } = {}) {
   const result = callback();
   if (result === undefined) {
     const WAIT_DURATION = 500; // ms
     timeout = Math.max(0, timeout - WAIT_DURATION);
-    if (!timeout) throw new Error(`Timed out while retrying ${callback.name}`);
+    if (!timeout) throw new Error(`Timed out retrying ${callback.name}`);
     return cy.wait(WAIT_DURATION).then(() => retryUntil(callback, { timeout }));
   }
   return cy.wrap(result);
 }
 
 before(() => {
+  episodesByShow = new Map();
   cy.server();
   cy.route({
     url: "https://api.tvmaze.com/shows/*/episodes",
@@ -221,10 +218,6 @@ before(() => {
       episodesByShow.set(xhr.url, xhr.response.body);
     },
   });
-});
-
-beforeEach(() => {
-  episodesByShow = new Map();
 });
 
 describe("Level 350", () => {

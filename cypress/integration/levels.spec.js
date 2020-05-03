@@ -1,3 +1,5 @@
+const baseUrl = "https://cyf-naderakhgari-tv.netlify.app/";
+
 /**
  * @param {Episode} episode
  */
@@ -49,7 +51,7 @@ function getSearchInput() {
  */
 function search(text) {
   // TODO `force` is needed for https://cyf-banirezaie-tv.netlify.app/
-  return getSearchInput().clear().type(text, { force: true });
+  return getSearchInput().clear({ force: true }).type(text, { force: true });
 }
 
 function getAllEpisodes() {
@@ -87,7 +89,21 @@ function getSelector() {
   return cy.get("select");
 }
 
-beforeEach(() => cy.visit(""));
+/** @type {Map<string, Array<Episode>>} */
+let episodesByShow;
+
+beforeEach(() => {
+  episodesByShow = new Map();
+  cy.server();
+  cy.route({
+    url: "https://api.tvmaze.com/shows/*/episodes",
+    onResponse: (/** @type {XMLHttpRequest & {url: string}} */ xhr) => {
+      console.log(`🤖 storing show episodes`, xhr.url);
+      episodesByShow.set(xhr.url, xhr.response.body);
+    },
+  });
+  cy.visit(baseUrl);
+});
 
 describe("Level 100", () => {
   it("shows all the episodes (levels 100-300)", () => {
@@ -140,10 +156,10 @@ describe("Level 200", () => {
     });
 
     it("shows how many episodes match (levels 200+)", () => {
-      cy.contains(/\d+\s+episode/);
-      getAllEpisodes().then(([episode]) => {
-        search(episode.name).then(() => {
-          cy.contains(/\D1\s+episode/);
+      getAllEpisodes().then((episodes) => {
+        cy.contains(episodes.length).then(($counter) => {
+          search(episodes[0].name);
+          cy.wrap($counter).contains(/(^|\D)1(\D|$)/);
         });
       });
     });
@@ -171,9 +187,6 @@ describe("Level 300", () => {
     });
   });
 });
-
-/** @type {Map<string, Array<Episode>>} */
-let episodesByShow;
 
 function getCurrentShowId() {
   for (const [id, [episode]] of episodesByShow) {
@@ -207,18 +220,6 @@ function retryUntil(callback, { timeout = 5000 } = {}) {
   }
   return cy.wrap(result);
 }
-
-before(() => {
-  episodesByShow = new Map();
-  cy.server();
-  cy.route({
-    url: "https://api.tvmaze.com/shows/*/episodes",
-    onResponse: (/** @type {XMLHttpRequest & {url: string}} */ xhr) => {
-      console.log(`🍅 storing show episodes`, xhr.url);
-      episodesByShow.set(xhr.url, xhr.response.body);
-    },
-  });
-});
 
 describe("Level 350", () => {
   it("shows all the episodes (levels 350+)", () => {
